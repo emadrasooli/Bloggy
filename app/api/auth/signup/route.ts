@@ -3,10 +3,10 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export async function POST(request: Request) {
-  const { email, password } = await request.json();
+  const { name, email, password } = await request.json();
 
-  if (!email || !password) {
-    return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+  if (!email || !password || !name) {
+    return NextResponse.json({ error: "Name, Email and password are required" }, { status: 400 });
   }
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -20,9 +20,9 @@ export async function POST(request: Request) {
   try {
     const user = await prisma.user.create({
       data: {
+        name,
         email,
         password: hashedPassword,
-        // Add other fields if necessary
       },
     });
     return NextResponse.json({ message: "User created", user }, { status: 201 });

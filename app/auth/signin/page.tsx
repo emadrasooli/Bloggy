@@ -1,13 +1,32 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { LogInIcon } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-const SignInPage = () => {
+export default function SignInPage () {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      const role = session?.user?.role;
+
+      if (role === "ADMIN") {
+        router.push("/admin");
+      } else if (role === "USER") {
+        router.push("/protected");
+      } else {
+        router.push("/");
+      }
+    }
+  }, [session, status, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,23 +38,18 @@ const SignInPage = () => {
 
     if (res?.error) {
       console.log(res.error);
-    } else {
-      const session = await fetch("/api/auth/session").then((res) => res.json());
-      const userRole = session?.user?.role;
-    
-      console.log("User role:", userRole);
-  };
+    } 
+};
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="bg-white p-6 w-80 mx-auto rounded-lg shadow-lg text-black space-y-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded shadow-md w-full max-w-sm text-black"
       >
-        <h2 className="text-2xl mb-4">Sign In</h2>
+        <h2 className="text-2xl mb-4 font-medium text-center flex align-baseline items-center justify-center gap-2"><LogInIcon />Sign In</h2>
         <div className="mb-4">
-          <label className="block mb-1">Email</label>
-          <input
+          <Label className="block mb-1">Email</Label>
+          <Input
             type="email"
             className="w-full border px-3 py-2"
             value={email}
@@ -44,8 +58,8 @@ const SignInPage = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block mb-1">Password</label>
-          <input
+          <Label className="block mb-1">Password</Label>
+          <Input
             type="password"
             className="w-full border px-3 py-2"
             value={password}
@@ -53,15 +67,15 @@ const SignInPage = () => {
             required
           />
         </div>
-        <button
+        <Button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded"
+          variant={"default"}
+          className="w-full"
         >
           Sign In
-        </button>
+        </Button>
       </form>
+      <Button variant={"link"} className="w-full" onClick={() => router.push('/auth/signup')} size={'sm'}>Create an account</Button>
     </div>
   );
-};
-
-export default SignInPage;
+}

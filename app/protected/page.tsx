@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-const ProtectedPage = () => {
+export default function ProtectedPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -24,7 +24,9 @@ const ProtectedPage = () => {
   return (
     <div className="p-6">
       <h1 className="text-3xl">Dashboard</h1>
-      <p>Welcome, {session?.user?.email}</p>
+      <p>Name, {session?.user?.name}</p>
+      <p>Email, {session?.user?.email}</p>
+      <p>Role, {session?.user?.role}</p>
       <button
         onClick={handleLogout}
         className="mt-4 bg-red-500 text-white py-2 px-4 rounded"
@@ -34,5 +36,3 @@ const ProtectedPage = () => {
     </div>
   );
 };
-
-export default ProtectedPage;

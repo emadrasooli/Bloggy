@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { IoPersonAdd } from "react-icons/io5";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-const SignUpPage = () => {
+
+export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -18,7 +24,7 @@ const SignUpPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await response.json();
@@ -37,15 +43,25 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="bg-white p-6 w-80 mx-auto rounded-lg shadow-lg text-black space-y-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded shadow-md w-full max-w-sm text-black"
       >
-        <h2 className="text-2xl mb-4">Sign Up</h2>
+        <h2 className="text-2xl mb-4 font-medium text-center flex align-baseline items-center justify-center gap-2"><IoPersonAdd />Sign Up</h2>
         <div className="mb-4">
-          <label className="block mb-1">Email</label>
-          <input
+          <Label className="block mb-1">Name</Label>
+          <Input
+            type="name"
+            className="w-full border px-3 py-2"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            disabled={loading} 
+          />
+        </div>
+        <div className="mb-4">
+          <Label className="block mb-1">Email</Label>
+          <Input
             type="email"
             className="w-full border px-3 py-2"
             value={email}
@@ -55,8 +71,8 @@ const SignUpPage = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block mb-1">Password</label>
-          <input
+          <Label className="block mb-1">Password</Label>
+          <Input
             type="password"
             className="w-full border px-3 py-2"
             value={password}
@@ -65,18 +81,16 @@ const SignUpPage = () => {
             disabled={loading} 
           />
         </div>
-        <button
+        <Button
           type="submit"
-          className={`w-full bg-green-500 text-white py-2 rounded ${
-            loading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+          className="w-full"
+          variant={"default"}
           disabled={loading}
         >
           {loading ? "Signing Up..." : "Sign Up"}
-        </button>
+        </Button>
       </form>
+      <Button variant={"link"} className="w-full" onClick={() => router.push('/auth/signin')} size={'sm'}>Already have an account</Button>
     </div>
   );
 };
-
-export default SignUpPage;
