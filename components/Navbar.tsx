@@ -12,7 +12,7 @@ export default function Navbar() {
         if(session?.data?.user.role === "ADMIN") {
             router.push("/admin");
         } else {
-            router.push("/protected");
+            router.push("/dashboard");
         }
     }
 

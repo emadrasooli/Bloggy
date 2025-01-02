@@ -21,7 +21,7 @@ export default function SignInPage () {
       if (role === "ADMIN") {
         router.push("/admin");
       } else if (role === "USER") {
-        router.push("/protected");
+        router.push("/dashboard");
       } else {
         router.push("/");
       }
