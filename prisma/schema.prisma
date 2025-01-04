@@ -29,12 +29,13 @@ model User {
 
 model Post {
   id         String        @id @default(cuid())
-  createdAt  DateTime   @default(now())
   title      String
   content    String?
   userId     String
   author     User       @relation(fields: [userId], references: [id])
-  categories Category[]
+  categoryId String     
+  category   Category   @relation(fields: [categoryId], references: [id])
+  createdAt  DateTime   @default(now())
 }
 
 model Category {

@@ -1,58 +1,44 @@
 "use client";
 
-import { useState, FormEvent } from 'react';
-import axios from 'axios';
+import { FormEvent, useState } from "react";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea";
+import { MdOutlinePostAdd } from "react-icons/md";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "./ui/select";
 
 interface PostFormProps {
-  user: any;
+  onSubmit: (postData: { title: string; content: string; category: string }) => Promise<void>;
 }
 
-const PostForm: React.FC<PostFormProps> = ({ user }) => {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [categories, setCategories] = useState<string[]>([]);
-  const [newCategory, setNewCategory] = useState('');
-  const [error, setError] = useState('');
-
-  const handleAddCategory = () => {
-    if (newCategory.trim() !== '' && !categories.includes(newCategory.trim())) {
-      setCategories([...categories, newCategory.trim()]);
-      setNewCategory('');
-    }
-  };
+const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [category, setCategory] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    try {
-      const response = await axios.post('/api/posts', {
-        title,
-        content,
-        categories,
-        userId: user.id, // Assuming user object has an id field
-      });
-
-      if (response.status === 201) {
-        // Clear form or redirect
-        setTitle('');
-        setContent('');
-        setCategories([]);
-        alert('Post created successfully!');
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'An error occurred');
-    }
+    await onSubmit({ title, content, category });
+    setTitle("");
+    setContent("");
+    setCategory("");
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Create a New Post</h2>
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
+    <form onSubmit={handleSubmit} className="space-y-6 p-6 bg-white rounded-xl shadow-md text-black">
       <div>
-        <label>Title:</label>
-        <input
+        <h1 className="text-2xl font-semibold text-center mb-4 flex items-center justify-center gap-1"><MdOutlinePostAdd />Create Post</h1>
+        <Label htmlFor="title">Title</Label>
+        <Input
+          id="title"
+          name="title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -61,34 +47,32 @@ const PostForm: React.FC<PostFormProps> = ({ user }) => {
       </div>
 
       <div>
-        <label>Content:</label>
-        <textarea
+        <Label htmlFor="content">Content</Label>
+        <Textarea
+          id="content"
+          name="content"
           value={content}
+          rows={5}
           onChange={(e) => setContent(e.target.value)}
           required
         />
       </div>
 
       <div>
-        <label>Categories:</label>
-        <div>
-          {categories.map((cat, index) => (
-            <span key={index} style={{ marginRight: '8px' }}>
-              {cat}
-            </span>
-          ))}
-        </div>
-        <input
-          type="text"
-          value={newCategory}
-          onChange={(e) => setNewCategory(e.target.value)}
-        />
-        <button type="button" onClick={handleAddCategory}>
-          Add Category
-        </button>
+      <Select>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Categories" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="light">Light</SelectItem>
+          <SelectItem value="dark">Dark</SelectItem>
+          <SelectItem value="system">System</SelectItem>
+        </SelectContent>
+</Select>
+
       </div>
 
-      <button type="submit">Create Post</button>
+      <Button type="submit">Create Post</Button>
     </form>
   );
 };
