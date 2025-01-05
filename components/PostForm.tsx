@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -21,20 +21,47 @@ interface PostFormProps {
 const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  // Fetch categories from the API
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/category", { method: "GET" });
+      if (!response.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+      const data = await response.json();
+      setCategories(data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await onSubmit({ title, content, category });
+    if (!selectedCategory) {
+      alert("Please select a category");
+      return;
+    }
+
+    await onSubmit({ title, content, category: selectedCategory });
     setTitle("");
     setContent("");
-    setCategory("");
+    setSelectedCategory("");
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-6 bg-white rounded-xl shadow-md text-black">
+      <h1 className="text-2xl font-semibold text-center mb-4 flex items-center justify-center gap-1">
+        <MdOutlinePostAdd /> Create Post
+      </h1>
+
       <div>
-        <h1 className="text-2xl font-semibold text-center mb-4 flex items-center justify-center gap-1"><MdOutlinePostAdd />Create Post</h1>
         <Label htmlFor="title">Title</Label>
         <Input
           id="title"
@@ -59,20 +86,24 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
       </div>
 
       <div>
-      <Select>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Categories" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="light">Light</SelectItem>
-          <SelectItem value="dark">Dark</SelectItem>
-          <SelectItem value="system">System</SelectItem>
-        </SelectContent>
-</Select>
-
+        <Label htmlFor="category">Category</Label>
+        <Select onValueChange={setSelectedCategory}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <Button type="submit">Create Post</Button>
+      <Button type="submit" className="w-full">
+        Create Post
+      </Button>
     </form>
   );
 };
