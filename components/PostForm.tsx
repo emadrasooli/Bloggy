@@ -13,18 +13,16 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "./ui/select";
+import { useSession } from "next-auth/react";
 
-interface PostFormProps {
-  onSubmit: (postData: { title: string; content: string; category: string }) => Promise<void>;
-}
 
-const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
+const PostForm = () => {
+  const { data: session } = useSession();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("");
 
-  // Fetch categories from the API
   const fetchCategories = async () => {
     try {
       const response = await fetch("/api/category", { method: "GET" });
@@ -44,15 +42,36 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedCategory) {
-      alert("Please select a category");
-      return;
-    }
+    const userId = session?.user.id;
 
-    await onSubmit({ title, content, category: selectedCategory });
-    setTitle("");
-    setContent("");
-    setSelectedCategory("");
+    try {
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          content,
+          userId,
+          categoryId: selectedCategory,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create post");
+      }
+
+      const newPost = await response.json();
+      console.log("Post created:", newPost);
+
+      setTitle("");
+      setContent("");
+      setSelectedCategory("");
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
   };
 
   return (
@@ -101,7 +120,7 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
         </Select>
       </div>
 
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-fit" size={"lg"}>
         Create Post
       </Button>
     </form>

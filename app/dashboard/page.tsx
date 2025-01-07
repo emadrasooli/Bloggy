@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { IoPerson } from "react-icons/io5";
+import { HiHome } from "react-icons/hi2";
 
 const Dashboard = () => {
   const { data: session } = useSession();
@@ -14,35 +15,10 @@ const Dashboard = () => {
     signOut({ callbackUrl: "/" });
   };
 
-  const handleCreatePost = async (postData: {
-    title: string;
-    content: string;
-    category: string;
-  }) => {
-    try {
-      const res = await fetch("/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(postData),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to create post");
-      }
-      
-      alert("Post created successfully!");
-      router.push("/");
-    } catch (error: any) {
-      console.error("Error:", error);
-      alert("Error creating post: " + error.message);
-    }
-  };
-
   return (
     <div className="text-white max-w-3xl mx-auto p-6 flex flex-col space-y-6">
       <h1 className="text-3xl font-medium">Dashboard</h1>
-      <Button onClick={() => router.push("/")} variant={"link"} className="text-gray-300 w-fit">Home</Button>
+      <Button onClick={() => router.push("/")} variant={"link"} className="text-gray-300 w-fit"><HiHome />Home</Button>
         <div className="bg-white text-black p-4 flex flex-row items-center space-x-4 relative rounded-xl">
           <div>
             <IoPerson size={40}/>
@@ -53,7 +29,7 @@ const Dashboard = () => {
           </div>
           <Button onClick={handleLogout} variant={"destructive"} className="absolute right-4">Logout</Button>
         </div>
-        <PostForm onSubmit={handleCreatePost}/>
+        <PostForm />
     </div>
   );
 };

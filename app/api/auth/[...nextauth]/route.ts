@@ -23,6 +23,8 @@ export const authOptions: NextAuthOptions = {
           where: { email: credentials.email },
         });
 
+        console.log(user);
+
         if (!user || !user.password) {
           return null;
         }
@@ -47,18 +49,21 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role;
-        token.name = user.name;
+    async jwt({ token, user, trigger, session }) {
+      if (trigger === "update") {
+        return { ...token, ...session.user }
       }
-      return token;
+
+      return { ...token, ...user }
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.role = token.role as string;
-        session.user.name = token.name as string;
-      }
+      session.user = {
+        ...session.user,
+        id: token.id as string,
+        name: token.name,
+        email: token.email,
+        role: token.role as string,
+      };
       return session;
     },
   },

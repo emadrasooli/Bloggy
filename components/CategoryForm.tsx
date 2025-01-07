@@ -30,14 +30,23 @@ export default function CategoryForm() {
       const data = await res.json();
       setMessage(`Category '${data.name}' created successfully!`);
       setName("");
+
+      setTimeout(() => {
+        setMessage("");
+      }, 3000)
     } catch (error: any) {
       setMessage(error.message);
+
+      setTimeout(() => {
+        setMessage("");
+      }, 3000)
     }
+
   };
 
   return (
-    <div className="flex flex-col bg-white text-black max-w-3xl mx-auto p-6 space-y-4">
-      <h2>Add a New Category</h2>
+    <div className="flex flex-col bg-white text-black p-6 space-y-4 rounded-xl">
+      <h2 className="text-xl font-medium text-center">Add a New Category</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Label htmlFor="name">Category Name</Label>
         <Input
@@ -49,7 +58,7 @@ export default function CategoryForm() {
         />
         <Button type="submit">Add Category</Button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <p className="text-sm bg-green-200 text-green-500 p-3 rounded-lg">{message}</p>}
     </div>
   );
 }
