@@ -106,7 +106,7 @@ const PostForm = () => {
 
       <div>
         <Label htmlFor="category">Category</Label>
-        <Select onValueChange={setSelectedCategory}>
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
