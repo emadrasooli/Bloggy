@@ -16,8 +16,8 @@ interface UserData {
 }
 
 export default function AdminPage() {
-  const { data: session } = useSession();
   const router = useRouter();
+  const { data: session } = useSession();
   const [users, setUsers] = useState<UserData[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
 
@@ -59,9 +59,6 @@ export default function AdminPage() {
         fetchCategories();
       }, []);
 
-
-
-
   return (
     <div className="text-white max-w-3xl mx-auto p-6 flex flex-col space-y-6">
       <h1 className="text-3xl font-medium">Admin Dashboard</h1>
@@ -79,7 +76,7 @@ export default function AdminPage() {
         <CategoryForm />
         <h3 className="text-xl font-medium">All Categories</h3>
         {users.length === 0 ? (
-        <p className="text-gray-700">No Category is exist</p>
+        <p className="text-gray-500 text-center">No Category is exist</p>
       ) : (
         <div className="grid gap-4 lg:grid-cols-4">
           {categories.map((category) => (
@@ -91,7 +88,7 @@ export default function AdminPage() {
       )}
         <h3 className="text-xl font-medium">All Users</h3>
         {users.length === 0 ? (
-        <p className="text-gray-700">No user is logged in!</p>
+        <p className="text-gray-500 text-center">No user is logged in!</p>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {users.map((user) => (

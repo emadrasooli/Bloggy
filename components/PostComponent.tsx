@@ -35,7 +35,7 @@ const Post: React.FC<PostProps> = ({
     <article
       className="bg-white text-black shadow-md rounded-xl p-6 space-y-6"
     >
-      <div className="flex flex-row items-center gap-1">
+      <div className="flex flex-row items-center gap-1" key={id}>
         <IoPerson size={24}/>
         <span className='text-gray-500'>{authorName}</span>
       </div>

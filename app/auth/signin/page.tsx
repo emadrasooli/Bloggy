@@ -7,10 +7,11 @@ import { LogInIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ToastContainer, toast } from "react-toastify"
 
 export default function SignInPage () {
-  const { data: session, status } = useSession();
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -37,7 +38,9 @@ export default function SignInPage () {
     });
 
     if (res?.error) {
-      console.log(res.error);
+      toast.error("Email or Password Is Invalid!", {
+        position: "bottom-center"
+      })
     } 
 };
 
@@ -48,20 +51,18 @@ export default function SignInPage () {
       >
         <h2 className="text-2xl mb-4 font-medium text-center flex align-baseline items-center justify-center gap-2"><LogInIcon />Sign In</h2>
         <div className="mb-4">
-          <Label className="block mb-1">Email</Label>
+          <Label>Email</Label>
           <Input
             type="email"
-            className="w-full border px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
         <div className="mb-4">
-          <Label className="block mb-1">Password</Label>
+          <Label>Password</Label>
           <Input
             type="password"
-            className="w-full border px-3 py-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -76,6 +77,7 @@ export default function SignInPage () {
         </Button>
       </form>
       <Button variant={"link"} className="w-full" onClick={() => router.push('/auth/signup')} size={'sm'}>Create an account</Button>
+      <ToastContainer />
     </div>
   );
 }

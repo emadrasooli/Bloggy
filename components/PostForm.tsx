@@ -14,6 +14,7 @@ import {
   SelectValue 
 } from "./ui/select";
 import { useSession } from "next-auth/react";
+import { toast, ToastContainer } from "react-toastify";
 
 
 const PostForm = () => {
@@ -63,8 +64,9 @@ const PostForm = () => {
         throw new Error(errorData.error || "Failed to create post");
       }
 
-      const newPost = await response.json();
-      console.log("Post created:", newPost);
+      toast.success("Post created successfully!", {
+        position: "bottom-center"
+      })
 
       setTitle("");
       setContent("");
@@ -123,6 +125,7 @@ const PostForm = () => {
       <Button type="submit" className="w-fit" size={"lg"}>
         Create Post
       </Button>
+      <ToastContainer />
     </form>
   );
 };

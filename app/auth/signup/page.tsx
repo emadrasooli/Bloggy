@@ -6,14 +6,15 @@ import { IoPersonAdd } from "react-icons/io5";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast, ToastContainer } from "react-toastify";
 
 
 export default function SignUpPage() {
+  const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,13 +31,19 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Something went wrong");
+        toast.error(data.error || "Something went wrong", {
+          position: "bottom-center"
+        });
       }
 
-      alert("User created successfully");
+      toast.success("User created successfully", {
+        position: "bottom-center"
+      });
       router.push("/auth/signin");
     } catch (error: any) {
-      alert(error.message || "Something went wrong");
+      toast.error(error.message || "Something went wrong", {
+        position: "bottom-center"
+      });
     } finally {
       setLoading(false);
     }
@@ -49,10 +56,9 @@ export default function SignUpPage() {
       >
         <h2 className="text-2xl mb-4 font-medium text-center flex align-baseline items-center justify-center gap-2"><IoPersonAdd />Sign Up</h2>
         <div className="mb-4">
-          <Label className="block mb-1">Name</Label>
+          <Label>Name</Label>
           <Input
             type="name"
-            className="w-full border px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -60,10 +66,9 @@ export default function SignUpPage() {
           />
         </div>
         <div className="mb-4">
-          <Label className="block mb-1">Email</Label>
+          <Label>Email</Label>
           <Input
             type="email"
-            className="w-full border px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -71,10 +76,9 @@ export default function SignUpPage() {
           />
         </div>
         <div className="mb-4">
-          <Label className="block mb-1">Password</Label>
+          <Label>Password</Label>
           <Input
             type="password"
-            className="w-full border px-3 py-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -91,6 +95,7 @@ export default function SignUpPage() {
         </Button>
       </form>
       <Button variant={"link"} className="w-full" onClick={() => router.push('/auth/signin')} size={'sm'}>Already have an account</Button>
+      <ToastContainer />
     </div>
   );
 };
