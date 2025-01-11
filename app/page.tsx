@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type { Post } from '@prisma/client';
 import Navbar from '@/components/Navbar';
 import PostComponent from '@/components/PostComponent';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface Author {
   id: string;
@@ -24,23 +25,19 @@ interface PostWithRelations extends Post {
 
 const HomePage: React.FC = () => {
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
+  const { isLoading, error, data } = useQuery({
+    queryKey: ['post'],
+    queryFn: async () => {
+      const response = await fetch('/api/posts')
+      return await response.json();
+    }
+  })
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await fetch('/api/posts');
-        if (!response.ok) {
-          throw new Error('Failed to fetch posts');
-        }
-        const data: PostWithRelations[] = await response.json();
-        setPosts(data);
-      } catch (err: any) {
-        console.error(err);
-    };
-  }
+  setPosts(data);
 
-    fetchPosts();
-  }, []);
+  if (isLoading) return 'Loading...'
+
+  if(error) return 'An error has occurred:' + error.message
 
   return (
     <div className='space-y-6'>

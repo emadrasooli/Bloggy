@@ -1,4 +1,5 @@
 import  Providers  from "./providers";
+import QueryProviders from "@/components/QueryProviders";
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
@@ -25,7 +26,9 @@ export default function RootLayout({
         className={`${poppins.className} antialiased bg-black text-white`}
       >
         <Providers>
-          {children}
+          <QueryProviders>
+            {children}
+          </QueryProviders>
         </Providers>
       </body>
     </html>
