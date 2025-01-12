@@ -65,7 +65,7 @@ const PostForm = () => {
       }
 
       toast.success("Post created successfully!", {
-        position: "bottom-center"
+        position: "bottom-right"
       })
 
       setTitle("");

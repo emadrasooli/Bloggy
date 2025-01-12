@@ -2,6 +2,7 @@
 
 import CategoryForm from "@/components/CategoryForm";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -25,39 +26,36 @@ export default function AdminPage() {
       signOut({ callbackUrl: "/" });
     };
 
-      const fetchUsers = async () => {
-        try {
-          const response = await fetch("/api/admin/users", { method: "GET" });
-          if (!response.ok) {
-            throw new Error("Failed to fetch categories");
-          }
-          const data = await response.json();
-          setUsers(data);
-        } catch (error) {
-          console.error("Error fetching categories:", error);
-        }
-      };
-    
-      useEffect(() => {
-        fetchUsers();
-      }, []);
+    const { isLoading: isLoadingUser, error: userError, data: userData } = useQuery({
+      queryKey: ['user'],
+      queryFn: async () => {
+        const response = await fetch('/api/admin/users')
+        if (!response.ok) throw new Error('Failed to fetch users');
+        return await response.json();
+      }
+    })
 
-      const fetchCategories = async () => {
-        try {
-          const response = await fetch("/api/category", { method: "GET" });
-          if (!response.ok) {
-            throw new Error("Failed to fetch categories");
-          }
-          const data = await response.json();
-          setCategories(data);
-        } catch (error) {
-          console.error("Error fetching categories:", error);
-        }
-      };
-    
-      useEffect(() => {
-        fetchCategories();
-      }, []);
+    const { isLoading: isLoadingCategories, error: categoriesError, data: categoryData } = useQuery({
+      queryKey: ['category'],
+      queryFn: async () => {
+        const response = await fetch('/api/category')
+        if (!response.ok) throw new Error('Failed to fetch category');
+        return await response.json();
+      }
+    })
+
+    useEffect(() => {
+      if (userData) {
+        setUsers(userData);
+      }
+      if (categoryData) {
+        setCategories(categoryData);
+      }
+    }, [userData, categoryData])
+
+
+   
+    if (userError || categoriesError) return <div className='flex flex-col justify-center items-center h-screen text-lg font-medium text-red-500'>An Error occurred</div>
 
   return (
     <div className="text-white max-w-3xl mx-auto p-6 flex flex-col space-y-6">
@@ -75,8 +73,8 @@ export default function AdminPage() {
         </div>
         <CategoryForm />
         <h3 className="text-xl font-medium">All Categories</h3>
-        {users.length === 0 ? (
-        <p className="text-gray-500 text-center">No Category is exist</p>
+        {isLoadingCategories ? (
+        <p className="text-gray-500 text-center">Loading...</p>
       ) : (
         <div className="grid gap-4 lg:grid-cols-4">
           {categories.map((category) => (
@@ -87,8 +85,8 @@ export default function AdminPage() {
         </div>
       )}
         <h3 className="text-xl font-medium">All Users</h3>
-        {users.length === 0 ? (
-        <p className="text-gray-500 text-center">No user is logged in!</p>
+        {isLoadingUser ? (
+        <p className="text-gray-500 text-center">Loading...</p>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {users.map((user) => (

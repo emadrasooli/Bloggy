@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import type { Post } from '@prisma/client';
 import Navbar from '@/components/Navbar';
 import PostComponent from '@/components/PostComponent';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 interface Author {
   id: string;
@@ -29,21 +29,26 @@ const HomePage: React.FC = () => {
     queryKey: ['post'],
     queryFn: async () => {
       const response = await fetch('/api/posts')
+      if (!response.ok) throw new Error('Failed to fetch posts');
       return await response.json();
     }
   })
 
-  setPosts(data);
+  useEffect(() => {
+    if (data) {
+      setPosts(data);
+    }
+  })
 
-  if (isLoading) return 'Loading...'
 
-  if(error) return 'An error has occurred:' + error.message
+
+  if(error) return <div className='flex flex-col justify-center items-center h-screen text-lg font-medium text-red-500 rounded-xl p-2'>An error has occurred - {error.message}</div>
 
   return (
     <div className='space-y-6'>
       <Navbar />
-      {posts.length === 0 ? (
-        <p className="text-gray-700 flex justify-center items-center">No posts available.</p>
+      {isLoading ? (
+        <p className="text-gray-500 flex justify-center items-center">Loading...</p>
       ) : (
         <div className="flex flex-col justify-center space-y-6 max-w-3xl mx-auto">
           {posts.map((post) => (

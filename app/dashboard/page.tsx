@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import PostComponent from '@/components/PostComponent';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { HiHome } from 'react-icons/hi2';
 import { IoPerson } from 'react-icons/io5';
 import PostForm from '@/components/PostForm';
+import { useQuery } from '@tanstack/react-query';
 
 interface Author {
   id: string;
@@ -31,37 +32,29 @@ interface PostWithRelations {
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
 
+  const { isLoading, error, data } = useQuery({
+    queryKey: ['posts'],
+    queryFn: async () => {
+      const response = await fetch(`/api/users/${session?.user.id}/posts`)
+      if (!response.ok) throw new Error('Failed to fetch Posts');
+      return await response.json();
+    }
+  })
+
   useEffect(() => {
-    if (!session) return;
+    if (data) {
+      setPosts(data);
+    }
+  })
 
-    const fetchUserPosts = async () => {
-      try {
-        const response = await fetch(`/api/users/${session.user.id}/posts`);
-        if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error('You must be logged in to view this content.');
-          } else if (response.status === 403) {
-            throw new Error('You do not have permission to view these posts.');
-          } else {
-            throw new Error('Failed to fetch your posts.');
-          }
-        }
-        const data: PostWithRelations[] = await response.json();
-        setPosts(data);
-      } catch (err: any) {
-        console.error(err);
-      }
-    };
-
-    fetchUserPosts();
-  }, [status]);
-
-    const handleLogout = async () => {
+  const handleLogout = async () => {
     signOut({ callbackUrl: "/" });
   };
+
+  if (error) return <div className='h-screen flex flex-col justify-center items-center'>Something Went Wrong!</div>
 
   return (
     <div className="text-white max-w-3xl mx-auto p-6 flex flex-col space-y-6">
@@ -78,11 +71,11 @@ const Dashboard: React.FC = () => {
           <Button onClick={handleLogout} variant={"destructive"} className="absolute right-4">Logout</Button>
       </div>
           <PostForm />
-          
-          {posts.length === 0 ? (
-        <p className="text-gray-500 text-center">You haven't created any posts yet.</p>
+          <h2 className='text-2xl font-medium'>Posts</h2>
+          {isLoading ? (
+        <p className="text-gray-500 text-center">Loading...</p>
       ) : (
-        <div className="flex flex-col justify-center space-y-6 max-w-3xl mx-auto">
+        <div className="flex flex-col justify-center space-y-6 max-w-3xl">
           {posts.map((post) => (
             <PostComponent
               key={post.id}
