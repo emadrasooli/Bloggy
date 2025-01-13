@@ -13,6 +13,18 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
+  const { pathname } = req.nextUrl;
+
+  if (pathname.startsWith('/admin')) {
+    if (token.role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+  } else if (pathname.startsWith('/dashboard')) {
+    if (token.role !== 'USER') {
+      return NextResponse.redirect(new URL('/admin', req.url));
+    }
+  }
+
   return NextResponse.next();
 }
 

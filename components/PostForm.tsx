@@ -15,6 +15,7 @@ import {
 } from "./ui/select";
 import { useSession } from "next-auth/react";
 import { toast, ToastContainer } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
 
 
 const PostForm = () => {
@@ -24,22 +25,20 @@ const PostForm = () => {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("");
 
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("/api/category", { method: "GET" });
-      if (!response.ok) {
-        throw new Error("Failed to fetch categories");
-      }
-      const data = await response.json();
-      setCategories(data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
+  const { data } = useQuery({
+    queryKey: ['category'],
+    queryFn: async () => {
+      const response = await fetch('/api/category')
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      return await response.json();
     }
-  };
+  })
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    if (data) {
+      setCategories(data);
+    }
+  })
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
