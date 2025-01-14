@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { HiHome } from "react-icons/hi2";
 import { IoPerson } from "react-icons/io5";
+import { IoIosCloseCircle } from "react-icons/io";
 
 interface UserData {
   id: string;
@@ -78,11 +79,12 @@ export default function AdminPage() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-4">
           {categories.map((category) => (
-            <div key={category.id} className="bg-white py-2 px-3 rounded-lg text-black text-center">
+            <div key={category.id} className="bg-white py-2 px-3 rounded-lg text-black text-center relative">
+              <IoIosCloseCircle className="absolute -right-2 -top-3 text-red-500 h-6 w-6 cursor-pointer bg-black rounded-full"/>
               <p className="text-sm font-medium">{category.name}</p>
             </div>
           ))}
-        </div>
+        </div>  
       )}
         <h3 className="text-xl font-medium">All Users</h3>
         {isLoadingUser ? (

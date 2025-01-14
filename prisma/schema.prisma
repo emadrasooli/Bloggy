@@ -36,6 +36,9 @@ model Post {
   categoryId String     
   category   Category   @relation(fields: [categoryId], references: [id])
   createdAt  DateTime   @default(now())
+
+  // deletedAt 
+  // updatedAt
 }
 
 model Category {

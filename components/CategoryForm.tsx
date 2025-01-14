@@ -34,8 +34,8 @@ export default function CategoryForm() {
       setTimeout(() => {
         setMessage("");
       }, 3000)
-    } catch (error: any) {
-      setMessage(error.message);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : String(error));
 
       setTimeout(() => {
         setMessage("");

@@ -38,7 +38,7 @@ const PostForm = () => {
     if (data) {
       setCategories(data);
     }
-  })
+  }, [data])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

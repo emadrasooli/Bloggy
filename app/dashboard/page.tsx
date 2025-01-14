@@ -48,7 +48,7 @@ const Dashboard: React.FC = () => {
     if (data) {
       setPosts(data);
     }
-  })
+  }, [data])
 
   const handleLogout = async () => {
     signOut({ callbackUrl: "/" });
