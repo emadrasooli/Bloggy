@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma'; 
 import { getServerSession } from 'next-auth';
-import  authOptions  from '@/lib/auth';
+import authOptions from '@/lib/auth';
 
 export async function GET(
-  request: Request,
-  { params }: { params: { userId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
 ) {
-  const { userId } = await params;
+  const userId  = (await params).userId;
 
   const session = await getServerSession(authOptions);
 
@@ -21,9 +21,7 @@ export async function GET(
 
   try {
     const userPosts = await prisma.post.findMany({
-      where: {
-        userId: userId,
-      },
+      where: { userId },
       include: {
         author: {
           select: { id: true, name: true, email: true },
@@ -32,9 +30,7 @@ export async function GET(
           select: { id: true, name: true },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
 
     return NextResponse.json(userPosts, { status: 200 });
