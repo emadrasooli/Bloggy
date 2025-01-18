@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { HiHome } from "react-icons/hi2";
 import { IoPerson } from "react-icons/io5";
-import { IoIosCloseCircle } from "react-icons/io";
+import { FaRegEdit } from "react-icons/fa";
 
 interface UserData {
   id: string;
@@ -22,10 +22,43 @@ export default function AdminPage() {
   const { data: session } = useSession();
   const [users, setUsers] = useState<UserData[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [editCategory, setEditCategory] = useState<{ id: string; name: string } | null>(null);
 
     const handleLogout = async () => {
       signOut({ callbackUrl: "/" });
     };
+
+    const handleSaveCategory  = async (name: string, id: string) => {
+      try {
+        const response = await fetch("/api/category", {
+          method: id ? "PATCH" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(id ? { id, name } : { name}),
+        });
+  
+        if (!response.ok) throw new Error("Failed to save category");
+        const updatedCategory = await response.json();
+
+        if(id) {
+          setCategories((prev) => 
+          prev.map((category) =>
+            category.id === id ? updatedCategory : category
+          ))
+        } else {
+          setCategories((prev) => [...prev, updatedCategory])
+        }
+
+        setEditCategory(null)
+      } catch (error) {
+        console.error("Error saving category:", error);
+      }
+    };
+
+    const handleEditCategory = (category: { id: string; name: string}) => {
+      setEditCategory(category);
+    }
 
     const { isLoading: isLoadingUser, error: userError, data: userData } = useQuery({
       queryKey: ['user'],
@@ -72,15 +105,15 @@ export default function AdminPage() {
           </div>
           <Button onClick={handleLogout} variant={"destructive"} className="absolute right-4">Logout</Button>
         </div>
-        <CategoryForm />
+        <CategoryForm editCategory={editCategory} onSave={handleSaveCategory}/>
         <h3 className="text-xl font-medium">All Categories</h3>
         {isLoadingCategories ? (
         <p className="text-gray-500 text-center">Loading...</p>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {categories.map((category) => (
             <div key={category.id} className="bg-white py-2 px-3 rounded-lg text-black text-center relative">
-              <IoIosCloseCircle className="absolute -right-2 -top-3 text-red-500 h-6 w-6 cursor-pointer bg-black rounded-full"/>
+              <FaRegEdit onClick={() => handleEditCategory(category)} className="absolute -right-2 -top-3 text-green-500 h-6 w-6 cursor-pointer bg-black p-1 rounded-md"/>
               <p className="text-sm font-medium">{category.name}</p>
             </div>
           ))}

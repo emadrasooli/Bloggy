@@ -1,25 +1,48 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 
-export default function CategoryForm() {
+interface CategoryFormProps {
+  editCategory?: {id: string; name: string} | null;
+  onSave: (name: string, id: string) => Promise<void>;
+  onSubmitSuccess?: () => void;
+
+}
+
+export default function CategoryForm({ editCategory, onSubmitSuccess}: CategoryFormProps) {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    if (editCategory) {
+      setName(editCategory.name);
+      setIsUpdating(true);
+    } else {
+      setName("");
+      setIsUpdating(false);
+    }
+  }, [editCategory]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
 
+    if (!name.trim()) {
+      setMessage("Category name cannot be empty.");
+      return;
+    }
+
     try {
       const res = await fetch("/api/category", {
-        method: "POST",
+        method: isUpdating ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ id: editCategory?.id, name }),
       });
 
       if (!res.ok) {
@@ -28,8 +51,14 @@ export default function CategoryForm() {
       }
 
       const data = await res.json();
-      setMessage(`Category '${data.name}' created successfully!`);
+      setMessage(
+        isUpdating
+          ? `Category '${data.name}' updated successfully!`
+          : `Category '${data.name}' created successfully!`
+      );
       setName("");
+      setIsUpdating(false);
+      onSubmitSuccess?.();
 
       setTimeout(() => {
         setMessage("");
@@ -46,7 +75,9 @@ export default function CategoryForm() {
 
   return (
     <div className="flex flex-col bg-white text-black p-6 space-y-4 rounded-xl">
-      <h2 className="text-xl font-medium text-center">Add a New Category</h2>
+      <h2 className="text-xl font-medium text-center">
+      {isUpdating ? "Update Category" : "Add a New Category"}
+      </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Label htmlFor="name">Category Name</Label>
         <Input
@@ -56,7 +87,7 @@ export default function CategoryForm() {
           onChange={(e) => setName(e.target.value)}
           required
         />
-        <Button type="submit">Add Category</Button>
+        <Button type="submit">{isUpdating ? "Update Category" : "Add Category"}</Button>
       </form>
       {message && <p className="text-sm bg-green-200 text-green-500 p-3 rounded-lg">{message}</p>}
     </div>

@@ -29,3 +29,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Error creating category" }, { status: 500 });
     }
   }
+
+export async function PATCH(request: NextRequest) {
+    try {
+      const { id, name } = await request.json();
+  
+      if (!id || !name) {
+        return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+      }
+  
+      const updatedCategory = await prisma.category.update({
+        where: { id },
+        data: { name }
+      });
+  
+      return NextResponse.json(updatedCategory, { status: 201 });
+    } catch (error) {
+      console.error("Error updating category:", error);
+      return NextResponse.json({ error: "Error updating category" }, { status: 500 });
+    }
+  }
