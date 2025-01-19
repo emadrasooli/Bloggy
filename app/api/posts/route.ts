@@ -67,3 +67,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Error creating post" }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { id } = await request.json();
+
+    if (!id) {
+      return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
+    }
+
+    const post = await prisma.post.findUnique({ where: { id } });
+    if (!post) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    await prisma.post.delete({ where: { id } });
+
+    return NextResponse.json({ message: "Post deleted successfully" }, { status: 200 });
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    return NextResponse.json({ error: "Error deleting post" }, { status: 500 });
+  }
+}

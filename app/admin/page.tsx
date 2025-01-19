@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { HiHome } from "react-icons/hi2";
 import { IoPerson } from "react-icons/io5";
 import { FaRegEdit } from "react-icons/fa";
+import Link from "next/link";
 
 interface UserData {
   id: string;
@@ -113,7 +114,7 @@ export default function AdminPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {categories.map((category) => (
             <div key={category.id} className="bg-white py-2 px-3 rounded-lg text-black text-center relative">
-              <FaRegEdit onClick={() => handleEditCategory(category)} className="absolute -right-2 -top-3 text-green-500 h-6 w-6 cursor-pointer bg-black p-1 rounded-md"/>
+              <FaRegEdit onClick={() => handleEditCategory(category)} className="absolute -right-2 -top-3 text-green-500 h-6 w-6 cursor-pointer bg-black p-1 rounded-sm"/>
               <p className="text-sm font-medium">{category.name}</p>
             </div>
           ))}
@@ -123,14 +124,17 @@ export default function AdminPage() {
         {isLoadingUser ? (
         <p className="text-gray-500 text-center">Loading...</p>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid md:grid-cols-2 gap-4">
           {users.map((user) => (
             <div key={user.id} className="bg-white text-black p-4 flex flex-row items-center space-x-4 relative rounded-xl">
             <div>
               <IoPerson size={40}/>
             </div>
             <div>
-              <p className="text-lg font-semibold flex items-center gap-2">{user.name} <span className="text-xs text-white bg-green-700 px-2 rounded-full">{user.role}</span></p>
+              <div className="flex items-center gap-2">
+              <Link href={`/profile/${user.id}`} className="text-xl font-semibold flex items-center gap-2 hover:underline underline-offset-2 ">{user.name} </Link>
+              <span className="text-xs text-white bg-green-700 px-2 rounded-full">{user.role}</span>
+              </div>
               <p className="text-gray-600 text-medium">{user.email}</p>
             </div>
           </div>
