@@ -13,6 +13,7 @@ export default function SignInPage () {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState("");
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export default function SignInPage () {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     const res = await signIn("credentials", {
       redirect: false,
       email,
@@ -42,6 +44,7 @@ export default function SignInPage () {
         position: "bottom-center"
       })
     } 
+    setLoading(false);
 };
 
   return (
@@ -57,6 +60,7 @@ export default function SignInPage () {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
         <div className="mb-4">
@@ -66,14 +70,16 @@ export default function SignInPage () {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
         <Button
           type="submit"
           variant={"default"}
           className="w-full"
+          disabled={loading}
         >
-          Sign In
+          {loading ? "Signing In..." : "Sign In"}
         </Button>
       </form>
       <Button variant={"link"} className="w-full" onClick={() => router.push('/auth/signup')} size={'sm'}>Create an account</Button>

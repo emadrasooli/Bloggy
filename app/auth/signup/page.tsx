@@ -32,13 +32,13 @@ export default function SignUpPage() {
 
       if (!response.ok) {
         toast.error(data.error || "Something went wrong", {
-          position: "bottom-center",
+          position: "bottom-right",
         });
         return;
       }
 
       toast.success("User created successfully", {
-        position: "bottom-center",
+        position: "bottom-right",
       });
 
       const signInResponse = await signIn("credentials", {

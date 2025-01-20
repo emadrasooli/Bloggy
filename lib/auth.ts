@@ -37,6 +37,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name || undefined,
           email: user.email,
           role: user.role,
+          isLoggedIn: user.isLoggedIn,
         };
       },
     }),
@@ -61,6 +62,7 @@ export const authOptions: NextAuthOptions = {
         name: token.name,
         email: token.email,
         role: token.role as string,
+        isLoggedIn: token.isLoggedIn as boolean,
       };
       return session;
     },
