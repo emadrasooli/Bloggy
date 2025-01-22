@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function PUT(request: NextRequest, { params }: { params: { postId: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ postId: string }> }) {
   try {
-    const { postId } = params;
+    const postId  = (await params).postId;
 
     if (!postId) {
       return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
