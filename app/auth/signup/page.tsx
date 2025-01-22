@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { IoPersonAdd } from "react-icons/io5";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -68,10 +67,9 @@ export default function SignUpPage() {
   return (
     <div className="bg-white p-6 w-80 mx-auto rounded-lg shadow-lg text-black space-y-4">
       <form onSubmit={handleSubmit}>
-        <h2 className="text-2xl mb-4 font-medium text-center flex align-baseline items-center justify-center gap-2">
-          <IoPersonAdd />
+        <h1 className="text-3xl mb-4 font-semibold text-center flex align-baseline items-center justify-center gap-2">
           Sign Up
-        </h2>
+        </h1>
         <div className="mb-4">
           <Label>Name</Label>
           <Input
@@ -108,14 +106,13 @@ export default function SignUpPage() {
           variant={"default"}
           disabled={loading}
         >
-          {loading ? "Signing Up..." : "Sign Up"}
+          {loading ? "Creating..." : "Create"}
         </Button>
       </form>
       <Button
         variant={"link"}
         className="w-full"
         onClick={() => router.push("/auth/signin")}
-        size={"sm"}
       >
         Already have an account
       </Button>

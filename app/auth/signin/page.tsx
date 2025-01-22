@@ -3,7 +3,6 @@
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LogInIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -52,7 +51,7 @@ export default function SignInPage () {
       <form
         onSubmit={handleSubmit}
       >
-        <h2 className="text-2xl mb-4 font-medium text-center flex align-baseline items-center justify-center gap-2"><LogInIcon />Sign In</h2>
+        <h1 className="text-3xl mb-4 font-semibold text-center flex align-baseline items-center justify-center gap-2">Sign In</h1>
         <div className="mb-4">
           <Label>Email</Label>
           <Input
@@ -79,7 +78,7 @@ export default function SignInPage () {
           className="w-full"
           disabled={loading}
         >
-          {loading ? "Signing In..." : "Sign In"}
+          {loading ? "Logging in..." : "Confirm"}
         </Button>
       </form>
       <Button variant={"link"} className="w-full" onClick={() => router.push('/auth/signup')} size={'sm'}>Create an account</Button>
