@@ -88,7 +88,7 @@ const HomePage: React.FC = () => {
       ) : (
         <div className="flex flex-col justify-center space-y-6 max-w-3xl mx-auto pb-6">
           {filteredPosts.length === 0 
-          ? <h2 className='text-center text-gray-500 my-6'>There is no post for this category</h2>
+          ? <p className="text-gray-500 flex justify-center items-center">No posts found</p>
           : filteredPosts.map((post) => (
             <PostComponent 
               key={post.id}

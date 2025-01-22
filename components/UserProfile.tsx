@@ -3,8 +3,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { IoPerson } from "react-icons/io5";
 import { Button } from "./ui/button";
-import { sign } from "crypto";
-import { signOut } from "next-auth/react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from "./ui/dialog";
+import { useState } from "react";
 
 interface PostWithRelations {
   id: string;
@@ -30,6 +39,8 @@ interface UserProfileProps {
 }
 
 export default function UserProfile({ id }: UserProfileProps) {
+  const router = useRouter();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { isLoading, error, data } = useQuery<UserProfile, Error>({
     queryKey: ['userProfile'],
@@ -43,7 +54,14 @@ export default function UserProfile({ id }: UserProfileProps) {
   });
 
   const handleLogout = async () => {
-    signOut({ callbackUrl: "/" });
+    try {
+      if (!id) throw new Error('User not authenticated');
+      await axios.delete(`/api/admin/users/${id}`);
+      setIsDialogOpen(false);
+      router.push('/admin');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
   };
 
   const getShortContent = (content: string | null) => {
@@ -78,7 +96,7 @@ export default function UserProfile({ id }: UserProfileProps) {
                     <p className="text-lg font-semibold flex items-center gap-2">{data.name} <span className="text-xs text-white bg-green-700 px-2 rounded-full">{data.role}</span></p>
                     <p className="text-gray-600 text-medium">{data.email}</p>
                 </div>
-                <Button onClick={() => handleLogout()} variant={"destructive"} className="absolute right-4">Logout</Button>
+                <Button onClick={() => setIsDialogOpen(true)} variant={"destructive"} className="absolute right-4">Logout</Button>
               </div>
 
               <div className="space-y-4">
@@ -107,6 +125,25 @@ export default function UserProfile({ id }: UserProfileProps) {
               )}
           </>
       )}
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className='text-black'>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the user <strong>{data?.name}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleLogout}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

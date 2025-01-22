@@ -15,7 +15,7 @@ model User {
   password   String
   role       Role    @default(USER)
   isLoggedIn Boolean @default(true)
-  posts      Post[]
+  posts      Post[] 
 }
 
 model Post {

@@ -6,16 +6,16 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 
 interface CategoryFormProps {
-  editCategory?: {id: string; name: string} | null;
-  onSave: (name: string, id: string) => Promise<void>;
+  editCategory?: { id: string; name: string } | null;
+  onSave: (name: string, id?: string) => Promise<void>;
   onSubmitSuccess?: () => void;
-
 }
 
-export default function CategoryForm({ editCategory, onSubmitSuccess}: CategoryFormProps) {
+export default function CategoryForm({ editCategory, onSave, onSubmitSuccess }: CategoryFormProps) {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (editCategory) {
@@ -36,25 +36,14 @@ export default function CategoryForm({ editCategory, onSubmitSuccess}: CategoryF
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      const res = await fetch("/api/category", {
-        method: isUpdating ? "PATCH" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: editCategory?.id, name }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Something went wrong");
-      }
-
-      const data = await res.json();
+      await onSave(editCategory?.name ? name : name, editCategory?.id);
       setMessage(
         isUpdating
-          ? `Category '${data.name}' updated successfully!`
-          : `Category '${data.name}' created successfully!`
+          ? `Category '${name}' updated successfully!`
+          : `Category '${name}' created successfully!`
       );
       setName("");
       setIsUpdating(false);
@@ -62,21 +51,21 @@ export default function CategoryForm({ editCategory, onSubmitSuccess}: CategoryF
 
       setTimeout(() => {
         setMessage("");
-      }, 3000)
+      }, 3000);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : String(error));
-
       setTimeout(() => {
         setMessage("");
-      }, 3000)
+      }, 3000);
+    } finally {
+      setIsSubmitting(false);
     }
-
   };
 
   return (
     <div className="flex flex-col bg-white text-black p-6 space-y-4 rounded-xl">
       <h2 className="text-xl font-medium text-center">
-      {isUpdating ? "Update Category" : "Add a New Category"}
+        {isUpdating ? "Update Category" : "Add a New Category"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Label htmlFor="name">Category Name</Label>
@@ -87,7 +76,9 @@ export default function CategoryForm({ editCategory, onSubmitSuccess}: CategoryF
           onChange={(e) => setName(e.target.value)}
           required
         />
-        <Button type="submit">{isUpdating ? "Update Category" : "Add Category"}</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isUpdating ? "Update Category" : "Add Category"}
+        </Button>
       </form>
       {message && <p className="text-sm bg-green-200 text-green-500 p-3 rounded-lg">{message}</p>}
     </div>

@@ -15,38 +15,73 @@ import {
 } from "./ui/select";
 import { useSession } from "next-auth/react";
 import { toast, ToastContainer } from "react-toastify";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+interface PostFormProps {
+  editingPost: PostWithRelations | null;
+  clearEditingPost: () => void;
+}
 
-const PostForm = () => {
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface PostWithRelations {
+  id: string;
+  title: string;
+  content?: string;
+  author: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  category: Category;
+  createdAt: string;
+}
+
+const PostForm: React.FC<PostFormProps> = ({ editingPost, clearEditingPost }) => {
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("");
 
-  const { data } = useQuery({
+  const { data, isLoading, error } = useQuery<Category[], Error>({
     queryKey: ['category'],
     queryFn: async () => {
-      const response = await fetch('/api/category')
+      const response = await fetch('/api/category');
       if (!response.ok) throw new Error('Failed to fetch categories');
       return await response.json();
     }
-  })
+  });
 
   useEffect(() => {
     if (data) {
       setCategories(data);
     }
-  }, [data])
+  }, [data]);
+
+  useEffect(() => {
+    if (editingPost) {
+      setTitle(editingPost.title);
+      setContent(editingPost.content || "");
+      setSelectedCategory(editingPost.category.id);
+    } else {
+      setTitle("");
+      setContent("");
+      setSelectedCategory("");
+    }
+  }, [editingPost]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const userId = session?.user.id;
 
     try {
-      const response = await fetch("/api/posts", {
-        method: "POST",
+      const response = await fetch(editingPost ? `/api/posts/${editingPost.id}` : "/api/posts", {
+        method: editingPost ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -60,25 +95,35 @@ const PostForm = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create post");
+        throw new Error(errorData.error || `Failed to ${editingPost ? "update" : "create"} post`);
       }
 
-      toast.success("Post created successfully!", {
+      toast.success(`Post ${editingPost ? "updated" : "created"} successfully!`, {
         position: "bottom-right"
-      })
+      });
 
+      // Reset form fields
       setTitle("");
       setContent("");
       setSelectedCategory("");
+      if (editingPost) {
+        clearEditingPost();
+      }
+
+      // Invalidate the 'posts' query to refetch the posts
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     } catch (error) {
-      console.error("Error creating post:", error);
+      console.error(`Error ${editingPost ? "updating" : "creating"} post:`, error);
+      toast.error(error instanceof Error ? error.message : "An unexpected error occurred", {
+        position: "bottom-right"
+      });
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-6 bg-white rounded-xl shadow-md text-black">
       <h1 className="text-2xl font-semibold text-center mb-4 flex items-center justify-center gap-1">
-        <MdOutlinePostAdd /> Create Post
+        <MdOutlinePostAdd /> {editingPost ? "Update Post" : "Create Post"}
       </h1>
 
       <div>
@@ -107,23 +152,41 @@ const PostForm = () => {
 
       <div>
         <Label htmlFor="category">Category</Label>
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a category" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {isLoading ? (
+          <p>Loading categories...</p>
+        ) : error ? (
+          <p className="text-red-500">Failed to load categories</p>
+        ) : (
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
-      <Button type="submit" className="w-fit" size={"lg"}>
-        Create Post
-      </Button>
+      <div className="flex items-center gap-3">
+        <Button type="submit" className="w-fit" size={"lg"}>
+          {editingPost ? "Update Post" : "Create Post"}
+        </Button>
+        {editingPost && (
+          <Button
+            type="button"
+            variant="destructive"
+            className="w-fit"
+            onClick={clearEditingPost}
+          >
+            Cancel Editing
+          </Button>
+        )}
+      </div>
       <ToastContainer />
     </form>
   );

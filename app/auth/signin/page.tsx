@@ -11,10 +11,10 @@ import { ToastContainer, toast } from "react-toastify"
 
 export default function SignInPage () {
   const router = useRouter();
-  const { data: session, status } = useSession();
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     if (status === "authenticated") {

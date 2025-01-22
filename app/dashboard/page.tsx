@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { HiHome } from 'react-icons/hi2';
 import { IoPerson } from 'react-icons/io5';
 import PostForm from '@/components/PostForm';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { MdDeleteOutline } from "react-icons/md";
+import { FaEdit } from 'react-icons/fa'; // Import the edit icon
 import { 
   Dialog, 
   DialogContent, 
@@ -40,11 +41,12 @@ interface PostWithRelations {
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
+  const queryClient = useQueryClient(); // Initialize React Query's queryClient
   const { data: session } = useSession();
   const [message, setMessage] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [selectedPost, setSelectedPost] = useState<PostWithRelations | null>(null);
+  const [editingPost, setEditingPost] = useState<PostWithRelations | null>(null); // State for editing
 
   const { isLoading, error, data } = useQuery<PostWithRelations[], Error>({
     queryKey: ['posts'],
@@ -59,7 +61,8 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (data) {
-      setPosts(data);
+      // It's better to let React Query manage the data
+      // setPosts(data);
     }
   }, [data]);
 
@@ -86,7 +89,8 @@ const Dashboard: React.FC = () => {
       }
 
       setMessage("Post deleted successfully");
-      setPosts(prevPosts => prevPosts.filter(post => post.id !== selectedPost.id));
+      // Invalidate the 'posts' query to refetch the posts
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
       setSelectedPost(null);
       setIsDialogOpen(false);
 
@@ -131,7 +135,7 @@ const Dashboard: React.FC = () => {
         </Button>
       </div>
 
-      <PostForm />
+      <PostForm editingPost={editingPost} clearEditingPost={() => setEditingPost(null)} />
 
       <div>
         <h2 className="text-2xl font-bold mb-4">Posts</h2>
@@ -140,25 +144,34 @@ const Dashboard: React.FC = () => {
         )}
         {isLoading ? (
           <p className='text-gray-500 text-center'>Loading...</p>
-        ) : posts.length === 0 ? (
+        ) : data && data.length === 0 ? (
           <p>No posts available</p>
         ) : (
           <ul className="space-y-6">
-            {posts.map((post) => (
+            {data?.map((post) => (
               <li key={post.id} className="bg-white text-black rounded-xl p-6 space-y-6">
                 <div className="flex flex-row items-center gap-2">
                   <IoPerson size={24} />
                   <span className='text-gray-500'>{post.author.name}</span>
-                  <button
-                    onClick={() => {
-                      setSelectedPost(post);
-                      setIsDialogOpen(true);
-                    }}
-                    className='ml-auto text-red-500 hover:text-red-700'
-                    aria-label={`Delete post titled ${post.title}`}
-                  >
-                    <MdDeleteOutline className='w-5 h-5 cursor-pointer' />
-                  </button>
+                  <div className="ml-auto flex items-center space-x-2">
+                    <button
+                      onClick={() => setEditingPost(post)}
+                      className='text-green-500 hover:text-green-700'
+                      aria-label={`Edit post titled ${post.title}`}
+                    >
+                      <FaEdit className='w-5 h-5 cursor-pointer' />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedPost(post);
+                        setIsDialogOpen(true);
+                      }}
+                      className='text-red-500 hover:text-red-700'
+                      aria-label={`Delete post titled ${post.title}`}
+                    >
+                      <MdDeleteOutline className='w-5 h-5 cursor-pointer' />
+                    </button>
+                  </div>
                 </div>
                 <div className='flex flex-col space-y-3'>
                   <h3 className="text-xl font-semibold">{post.title}</h3>
