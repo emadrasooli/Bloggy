@@ -77,7 +77,7 @@ export default function AdminPage() {
       setEditCategory(null);
       setErrorMessage("");
     },
-    onError: (error: any) => {
+    onError: (error) => {
       console.error("Error saving category:", error);
       setErrorMessage(error.message || "Error saving category");
     }
