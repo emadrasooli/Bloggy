@@ -9,7 +9,17 @@ import { useEffect, useState } from "react";
 import { HiHome } from "react-icons/hi2";
 import { IoPerson } from "react-icons/io5";
 import { FaRegEdit } from "react-icons/fa";
+import { IoCloseCircle } from "react-icons/io5";
 import Link from "next/link";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
+import { toast, ToastContainer } from "react-toastify";
 
 interface UserData {
   id: string;
@@ -22,13 +32,15 @@ export default function AdminPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: session } = useSession();
-
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<{ id: string; name: string } | null>(null);
   const [users, setUsers] = useState<UserData[]>([]);
   const [editCategory, setEditCategory] = useState<{ id: string; name: string } | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const handleLogout = async () => {
     signOut({ callbackUrl: "/" });
+    setIsLogoutDialogOpen(false);
   };
 
   const { isLoading: isLoadingUser, error: userError, data: userData } = useQuery<UserData[], Error>({
@@ -67,7 +79,7 @@ export default function AdminPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save category");
+        console.error(errorData.error || "Failed to save category");   
       }
 
       return await response.json();
@@ -75,21 +87,45 @@ export default function AdminPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category'] });
       setEditCategory(null);
-      setErrorMessage("");
     },
     onError: (error) => {
-      console.error("Error saving category:", error);
-      setErrorMessage(error.message || "Error saving category");
+      console.error(`Error saving category: ${error}`);
     }
   });
 
-  const handleSaveCategory = async (name: string, id?: string) => {
+  const handleDeleteCategory = async (categoryId: string) => {
     try {
-      await saveCategoryMutation.mutateAsync({ id, name });
+      console.log(categoryId);
+        const response = await fetch('/api/category', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: categoryId }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to delete category');
+        }
+
+        toast.success(data.message, {
+          position: "bottom-right"
+        });
+        queryClient.invalidateQueries({ queryKey: ['category'] });
+        setIsCategoryDialogOpen(false);
     } catch (error) {
-      console.error("Error saving category:", error);
-      setErrorMessage("Error saving category");
+        if (error instanceof Error) {
+            toast.error(`Error: ${error.message}`);
+        } else {
+            toast.error(`Error: , ${error}`);
+        }
     }
+};
+
+  const handleSaveCategory = async (name: string, id?: string) => {
+    await saveCategoryMutation.mutateAsync({ id, name });
   };
 
   const handleEditCategory = (category: { id: string; name: string }) => {
@@ -123,26 +159,31 @@ export default function AdminPage() {
           </p>
           <p className="text-gray-600 text-medium">{session?.user?.email}</p>
         </div>
-        <Button onClick={handleLogout} variant={"destructive"} className="absolute right-4">
+        <Button onClick={() => {
+          setIsLogoutDialogOpen(true);
+        }} variant={"destructive"} className="absolute right-4">
           Logout
         </Button>
       </div>
       <CategoryForm editCategory={editCategory} onSave={handleSaveCategory} />
-      {errorMessage && (
-        <p className="text-sm bg-red-200 text-red-500 p-3 rounded-lg">{errorMessage}</p>
-      )}
       <h3 className="text-xl font-medium">All Categories</h3>
       {isLoadingCategories ? (
         <p className="text-gray-500 text-center">Loading...</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {categoryData.map((category: { id: string; name: string }) => (
-            <div key={category.id} className="bg-white py-2 px-3 rounded-lg text-black text-center relative">
+            <div key={category.id} className="bg-white py-2 px-3 rounded-lg text-black text-center relative flex flex-row items-center justify-center">
               <FaRegEdit
                 onClick={() => handleEditCategory(category)}
-                className="absolute -right-2 -top-3 text-green-500 h-6 w-6 cursor-pointer bg-black p-1 rounded-sm"
+                className="absolute left-4 cursor-pointer"
               />
               <p className="text-sm font-medium">{category.name}</p>
+              <IoCloseCircle
+                onClick={() => {
+                  setCategoryToDelete(category);
+                  setIsCategoryDialogOpen(true);
+                }}
+                className="absolute -right-2 -top-3 text-red-500 h-6 w-6 cursor-pointer bg-black rounded-full" />
             </div>
           ))}
         </div>
@@ -172,6 +213,47 @@ export default function AdminPage() {
           ))}
         </div>
       )}
+      
+      <ToastContainer />
+
+      <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+        <DialogContent className='text-black'>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete <strong>{categoryToDelete?.name}</strong> category?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={() => handleDeleteCategory(categoryToDelete?.id || "")}>
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+        <DialogContent className='text-black'>
+          <DialogHeader>
+            <DialogTitle>Confirm Logout</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to Logout?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsLogoutDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleLogout}>
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

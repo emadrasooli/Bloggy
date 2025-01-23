@@ -39,7 +39,7 @@ export default function CategoryForm({ editCategory, onSave, onSubmitSuccess }: 
     setIsSubmitting(true);
 
     try {
-      await onSave(editCategory?.name ? name : name, editCategory?.id);
+      await onSave(name, editCategory?.id);
       setMessage(
         isUpdating
           ? `Category '${name}' updated successfully!`
@@ -80,7 +80,13 @@ export default function CategoryForm({ editCategory, onSave, onSubmitSuccess }: 
           {isUpdating ? "Update Category" : "Add Category"}
         </Button>
       </form>
-      {message && <p className="text-sm bg-green-200 text-green-500 p-3 rounded-lg">{message}</p>}
+      {message && <p
+          className={`text-sm p-3 rounded-lg ${
+            message.includes("successfully") ? "bg-green-200 text-green-500" : "bg-red-200 text-red-500"
+          }`}
+        >
+          {message}
+        </p>}
     </div>
   );
 }

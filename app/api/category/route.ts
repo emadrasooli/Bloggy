@@ -11,12 +11,28 @@ export async function GET() {
     }
   }
 
-export async function POST(request: NextRequest) {
+  export async function POST(request: NextRequest) {
     try {
       const { name } = await request.json();
   
       if (!name) {
         return NextResponse.json({ error: "Category name is required" }, { status: 400 });
+      }
+  
+      const existingCategory = await prisma.category.findFirst({
+        where: {
+          name: {
+            equals: name,
+            mode: "insensitive",
+          },
+        },
+      });
+  
+      if (existingCategory) {
+        return NextResponse.json(
+          { error: "Category with this name already exists" },
+          { status: 400 }
+        );
       }
   
       const category = await prisma.category.create({
@@ -29,23 +45,82 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Error creating category" }, { status: 500 });
     }
   }
+  
 
-export async function PATCH(request: NextRequest) {
+  export async function PATCH(request: NextRequest) {
     try {
       const { id, name } = await request.json();
   
       if (!id || !name) {
-        return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Category ID and name are required" },
+          { status: 400 }
+        );
+      }
+  
+      const categoryToUpdate = await prisma.category.findUnique({
+        where: { id },
+      });
+  
+      if (!categoryToUpdate) {
+        return NextResponse.json({ error: "Category not found" }, { status: 404 });
+      }
+
+      const duplicateCategory = await prisma.category.findFirst({
+        where: {
+          name: {
+            equals: name,
+            mode: "insensitive",
+          },
+          NOT: {
+            id: id,
+          },
+        },
+      });
+  
+      if (duplicateCategory) {
+        return NextResponse.json(
+          { error: "Another category with this name already exists" },
+          { status: 400 }
+        );
       }
   
       const updatedCategory = await prisma.category.update({
         where: { id },
-        data: { name }
+        data: { name },
       });
   
-      return NextResponse.json(updatedCategory, { status: 201 });
+      return NextResponse.json(updatedCategory, { status: 200 });
     } catch (error) {
       console.error("Error updating category:", error);
       return NextResponse.json({ error: "Error updating category" }, { status: 500 });
     }
   }
+  
+
+  export async function DELETE(request: NextRequest) {
+    try {
+        const { id } = await request.json();
+
+        if (!id) {
+            return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+        }
+
+        const existingCategory = await prisma.category.findUnique({
+            where: { id },
+        });
+
+        if (!existingCategory) {
+            return NextResponse.json({ error: "Category not found" }, { status: 404 });
+        }
+
+        await prisma.category.delete({
+            where: { id },
+        });
+
+        return NextResponse.json({ message: "Category deleted successfully" }, { status: 200 });
+    } catch (error) {
+        console.error("Error deleting category:", error);
+        return NextResponse.json({ error: "Error deleting category" }, { status: 500 });
+    }
+}

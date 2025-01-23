@@ -9,7 +9,7 @@ import { IoPerson } from 'react-icons/io5';
 import PostForm from '@/components/PostForm';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { MdDeleteOutline } from "react-icons/md";
-import { FaEdit } from 'react-icons/fa'; // Import the edit icon
+import { FaEdit } from 'react-icons/fa';
 import { 
   Dialog, 
   DialogContent, 
@@ -41,12 +41,13 @@ interface PostWithRelations {
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
-  const queryClient = useQueryClient(); // Initialize React Query's queryClient
+  const queryClient = useQueryClient();
   const { data: session } = useSession();
   const [message, setMessage] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostWithRelations | null>(null);
-  const [editingPost, setEditingPost] = useState<PostWithRelations | null>(null); // State for editing
+  const [editingPost, setEditingPost] = useState<PostWithRelations | null>(null);
 
   const { isLoading, error, data } = useQuery<PostWithRelations[], Error>({
     queryKey: ['posts'],
@@ -59,15 +60,9 @@ const Dashboard: React.FC = () => {
     enabled: !!session?.user.id,
   });
 
-  useEffect(() => {
-    if (data) {
-      // It's better to let React Query manage the data
-      // setPosts(data);
-    }
-  }, [data]);
-
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/" });
+    setIsLogoutDialogOpen(false);
   };
 
   const handleDelete = async () => {
@@ -89,7 +84,6 @@ const Dashboard: React.FC = () => {
       }
 
       setMessage("Post deleted successfully");
-      // Invalidate the 'posts' query to refetch the posts
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       setSelectedPost(null);
       setIsDialogOpen(false);
@@ -130,7 +124,9 @@ const Dashboard: React.FC = () => {
           </p>
           <p className="text-gray-600">{session?.user?.email}</p>
         </div>
-        <Button onClick={handleLogout} variant="destructive" className="absolute right-4">
+        <Button onClick={() => {
+          setIsLogoutDialogOpen(true);
+        }} variant="destructive" className="absolute right-4">
           Logout
         </Button>
       </div>
@@ -190,6 +186,25 @@ const Dashboard: React.FC = () => {
           </ul>
         )}
       </div>
+
+      <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+        <DialogContent className='text-black'>
+          <DialogHeader>
+            <DialogTitle>Confirm Logout</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to Logout?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsLogoutDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleLogout}>
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className='text-black'>

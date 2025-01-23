@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     if (!title || !userId || !categoryId) {
       return NextResponse.json(
-        { error: "Title, userId, and categoryId are required" },
+        { error: "Title, Content, and category are required" },
         { status: 400 }
       );
     }

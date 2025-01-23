@@ -96,7 +96,7 @@ export default function UserProfile({ id }: UserProfileProps) {
                     <p className="text-lg font-semibold flex items-center gap-2">{data.name} <span className="text-xs text-white bg-green-700 px-2 rounded-full">{data.role}</span></p>
                     <p className="text-gray-600 text-medium">{data.email}</p>
                 </div>
-                <Button onClick={() => setIsDialogOpen(true)} variant={"destructive"} className="absolute right-4">Logout</Button>
+                <Button onClick={() => setIsDialogOpen(true)} variant={"destructive"} className="absolute right-4">Delete User</Button>
               </div>
 
               <div className="space-y-4">
