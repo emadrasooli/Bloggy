@@ -3,7 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
  
 export async function GET() {
     try {
-      const categories = await prisma.category.findMany();
+      const categories = await prisma.category.findMany({
+        orderBy: {
+          name: "asc",
+        },
+      });
       return NextResponse.json(categories, { status: 200 });
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -50,6 +54,7 @@ export async function GET() {
   export async function PATCH(request: NextRequest) {
     try {
       const { id, name } = await request.json();
+      console.log(id, name);
   
       if (!id || !name) {
         return NextResponse.json(

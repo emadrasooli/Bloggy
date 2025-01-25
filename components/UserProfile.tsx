@@ -96,13 +96,20 @@ export default function UserProfile({ id }: UserProfileProps) {
                     <p className="text-lg font-semibold flex items-center gap-2">{data.name} <span className="text-xs text-white bg-green-700 px-2 rounded-full">{data.role}</span></p>
                     <p className="text-gray-600 text-medium">{data.email}</p>
                 </div>
-                <Button onClick={() => setIsDialogOpen(true)} variant={"destructive"} className="absolute right-4">Delete User</Button>
+                <Button 
+                  onClick={() => setIsDialogOpen(true)} 
+                  variant={"destructive"} 
+                  className="absolute right-4"
+                  disabled={data.role === "ADMIN"}
+                  >
+                    {data.role === "ADMIN" ? "Delete Admin" : "Delete User"}
+                </Button>
               </div>
 
               <div className="space-y-4">
                 <h2 className="text-xl font-medium">All Posts</h2>
                 {data.posts.length === 0 ? (
-                    <p className="text-gray-500 text-center">No posts available</p>
+                    <p className="text-gray-500 text-center">No posts created</p>
                  ) : (
                   <ul className="space-y-6">
                     {data.posts.map((post) => (

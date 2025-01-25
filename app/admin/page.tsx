@@ -77,25 +77,22 @@ export default function AdminPage() {
         body: JSON.stringify(id ? { id, name } : { name }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error(errorData.error || "Failed to save category");   
+        throw new Error(data.error || 'Failed to save category');
       }
 
-      return await response.json();
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category'] });
       setEditCategory(null);
     },
-    onError: (error) => {
-      console.error(`Error saving category: ${error}`);
-    }
   });
 
   const handleDeleteCategory = async (categoryId: string) => {
     try {
-      console.log(categoryId);
         const response = await fetch('/api/category', {
             method: 'DELETE',
             headers: {
@@ -125,7 +122,7 @@ export default function AdminPage() {
 };
 
   const handleSaveCategory = async (name: string, id?: string) => {
-    await saveCategoryMutation.mutateAsync({ id, name });
+      await saveCategoryMutation.mutateAsync({ id, name });
   };
 
   const handleEditCategory = (category: { id: string; name: string }) => {
@@ -172,7 +169,7 @@ export default function AdminPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {categoryData.map((category: { id: string; name: string }) => (
-            <div key={category.id} className="bg-white py-2 px-3 rounded-lg text-black text-center relative flex flex-row items-center justify-center">
+            <div key={category.id} className="bg-white py-2 px-3 rounded-xl text-black text-center relative flex flex-row items-center justify-center">
               <FaRegEdit
                 onClick={() => handleEditCategory(category)}
                 className="absolute left-4 cursor-pointer"

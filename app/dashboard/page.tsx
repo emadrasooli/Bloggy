@@ -141,7 +141,7 @@ const Dashboard: React.FC = () => {
         {isLoading ? (
           <p className='text-gray-500 text-center'>Loading...</p>
         ) : data && data.length === 0 ? (
-          <p>No posts available</p>
+          <p className='text-gray-500 text-center'>No posts created</p>
         ) : (
           <ul className="space-y-6">
             {data?.map((post) => (

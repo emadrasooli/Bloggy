@@ -80,7 +80,8 @@ export default function CategoryForm({ editCategory, onSave, onSubmitSuccess }: 
           {isUpdating ? "Update Category" : "Add Category"}
         </Button>
       </form>
-      {message && <p
+      {message && 
+        <p
           className={`text-sm p-3 rounded-lg ${
             message.includes("successfully") ? "bg-green-200 text-green-500" : "bg-red-200 text-red-500"
           }`}
