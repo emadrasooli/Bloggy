@@ -102,7 +102,7 @@ export default function UserProfile({ id }: UserProfileProps) {
                   className="absolute right-4"
                   disabled={data.role === "ADMIN"}
                   >
-                    {data.role === "ADMIN" ? "Delete Admin" : "Delete User"}
+                    Delete User
                 </Button>
               </div>
 

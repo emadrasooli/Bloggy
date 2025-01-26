@@ -31,7 +31,9 @@ export default function CategoryForm({ editCategory, onSave, onSubmitSuccess }: 
     e.preventDefault();
     setMessage("");
 
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
       setMessage("Category name cannot be empty.");
       return;
     }

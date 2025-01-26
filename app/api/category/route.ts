@@ -18,15 +18,16 @@ export async function GET() {
   export async function POST(request: NextRequest) {
     try {
       const { name } = await request.json();
+      const trimmedName = name.trim();
   
-      if (!name) {
+      if (!trimmedName) {
         return NextResponse.json({ error: "Category name is required" }, { status: 400 });
       }
   
       const existingCategory = await prisma.category.findFirst({
         where: {
           name: {
-            equals: name,
+            equals: trimmedName,
             mode: "insensitive",
           },
         },
@@ -40,7 +41,7 @@ export async function GET() {
       }
   
       const category = await prisma.category.create({
-        data: { name },
+        data: { name: trimmedName },
       });
   
       return NextResponse.json(category, { status: 201 });
@@ -54,9 +55,9 @@ export async function GET() {
   export async function PATCH(request: NextRequest) {
     try {
       const { id, name } = await request.json();
-      console.log(id, name);
+      const trimmedName = name.trim();
   
-      if (!id || !name) {
+      if (!id || !trimmedName) {
         return NextResponse.json(
           { error: "Category ID and name are required" },
           { status: 400 }
@@ -74,7 +75,7 @@ export async function GET() {
       const duplicateCategory = await prisma.category.findFirst({
         where: {
           name: {
-            equals: name,
+            equals: trimmedName,
             mode: "insensitive",
           },
           NOT: {
@@ -92,7 +93,7 @@ export async function GET() {
   
       const updatedCategory = await prisma.category.update({
         where: { id },
-        data: { name },
+        data: { name: trimmedName },
       });
   
       return NextResponse.json(updatedCategory, { status: 200 });
